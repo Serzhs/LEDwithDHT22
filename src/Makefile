@@ -21,7 +21,7 @@ all : $(BINARIES)
 $(RGB_LIBRARY): FORCE
 	$(MAKE) -C $(RGB_LIBDIR)
 
-text-example: date_time_temp.o
+date_time_temp.o: date_time_temp.o
 
 # All the binaries that have the same name as the object file.q
 % : %.o $(RGB_LIBRARY)
