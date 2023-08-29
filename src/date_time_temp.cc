@@ -4,15 +4,44 @@
 
 using namespace rgb_matrix;
 
-#include <time.h>
 #include <wiringPi.h>
-#include <string>
-#include <math.h>
+#include <iostream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 #include <unistd.h>
 #include <cstring>
-#include <stdio.h>
 
 #define DHT_PIN 8 // WiringPi 2 = BCM 27 = connector pin 13
+#define DHT_BUTTON_PIN 25 // WiringPi 25
+
+int getDayIndex() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+    struct std::tm *localTime = std::localtime(&currentTime);
+    return localTime->tm_wday;
+}
+
+std::string getFormattedDate() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+
+    char buffer[10];
+    std::strftime(buffer, sizeof(buffer), "%d.%m", std::localtime(&currentTime));
+
+    return buffer;
+}
+
+std::string getFormattedTime() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+
+    char buffer[6];
+    std::strftime(buffer, sizeof(buffer), "%H:%M", std::localtime(&currentTime));
+
+    return buffer;
+}
+
 
 int delayInS = 1;
 
@@ -38,6 +67,8 @@ int main(int argc, char *argv[])
 
     // Init LED matrix
     RGBMatrix *matrix = RGBMatrix::CreateFromFlags(&argc, &argv, &matrix_options, &runtime_opt);
+
+    // matrix->SetBrightness(100);
 
     if (matrix == NULL)
     {
@@ -80,15 +111,10 @@ int main(int argc, char *argv[])
 
     // Init time variables
     const char *weekdaysArr[7] = {"7diena", "1diena", "2diena", "3diena", "4diena", "5diena", "6diena"};
-    char dayInfo[7];
-    char dateInfo[255];
-    char timeInfo[7];
+    
     char tmpInfo[7];
     char humInfo[7];
-    struct timespec next_time;
-    next_time.tv_sec = time(NULL);
-    next_time.tv_nsec = 0;
-    struct tm tm;
+    
 
     while (true)
     {
@@ -96,43 +122,40 @@ int main(int argc, char *argv[])
 
         offscreen->Fill(0, 0, 0);
 
-        localtime_r(&next_time.tv_sec, &tm);
+        int dayIndex = getDayIndex();
+        std::string formattedDate = getFormattedDate();
+        std::string formattedTime = getFormattedTime();
 
-        // Get day info
-        strftime(dayInfo, sizeof(dayInfo), "%w", &tm);
-        // Get date info
-        strftime(dateInfo, sizeof(dateInfo), "(%d.%m)", &tm);
-        // Get time info
-        strftime(timeInfo, sizeof(timeInfo), "%H:%M", &tm);
         // Get temperature info
         sprintf(tmpInfo, "%d C", temperatureAndHumidityValues.temperatureValue);
         // Get humidity info
         sprintf(humInfo, "%d%%", temperatureAndHumidityValues.humidityValue);
 
-        // Draw day info
+        // // Draw day info
         rgb_matrix::DrawText(
             offscreen,
             dayFont,
             // center text
-            32 - (((strlen(weekdaysArr[dayInfo[0] - '0'])) * dayFont.CharacterWidth('M')) / 2),
+            32 - (((strlen(weekdaysArr[dayIndex])) * dayFont.CharacterWidth('M')) / 2),
             1 + dayFont.baseline(),
             days_color,
             NULL,
-            weekdaysArr[dayInfo[0] - '0'],
+            weekdaysArr[dayIndex],
             0);
 
-        // Draw date info
+        // // Draw date info
         rgb_matrix::DrawText(
             offscreen,
             dateFont,
             // center text
-            32 - ((strlen(dateInfo) * dateFont.CharacterWidth('M')) / 2),
+            32 - ((formattedDate.length() * dateFont.CharacterWidth('M')) / 2),
             2 + dayFont.baseline() + dateFont.baseline(),
             date_color,
             NULL,
-            dateInfo,
+            formattedDate.c_str(),
             0);
-        // Draw time info
+
+        // // Draw time info
         rgb_matrix::DrawText(
             offscreen,
             timeFont,
@@ -140,8 +163,9 @@ int main(int argc, char *argv[])
             5 + dateFont.baseline() + timeFont.baseline(),
             time_color,
             NULL,
-            timeInfo,
+            formattedTime.c_str(),
             -1);
+
         // Draw temperature info
         rgb_matrix::DrawText(
             offscreen,
@@ -164,14 +188,8 @@ int main(int argc, char *argv[])
             humInfo,
             1);
 
-        // Wait until we're ready to show it.
-        clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_time, NULL);
-
         // Atomic swap with double buffer
         offscreen = matrix->SwapOnVSync(offscreen);
-
-        // Update time
-        next_time.tv_sec += delayInS;
 
         // change to 1s
         delay(delayInS * 1000);
