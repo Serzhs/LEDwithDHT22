@@ -52,6 +52,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    int initial_brightness = 30;
+    int brightness = initial_brightness;
+
     RGBMatrix::Options matrix_options;
     rgb_matrix::RuntimeOptions runtime_opt;
 
@@ -61,14 +64,12 @@ int main(int argc, char *argv[])
     matrix_options.cols = 64;
     matrix_options.chain_length = 1;
     matrix_options.parallel = 1;
-    matrix_options.brightness = 30;
+    matrix_options.brightness = initial_brightness;
     runtime_opt.drop_privileges = 0;
     runtime_opt.gpio_slowdown = 4;
 
     // Init LED matrix
     RGBMatrix *matrix = RGBMatrix::CreateFromFlags(&argc, &argv, &matrix_options, &runtime_opt);
-
-    // matrix->SetBrightness(100);
 
     if (matrix == NULL)
     {
@@ -84,6 +85,7 @@ int main(int argc, char *argv[])
     // Set colors
     Color days_color(100, 10, 10);
     Color time_color(0, 100, 0);
+    Color brigtness_color(255, 255, 255);
     Color date_color(255, 255, 0);
     Color tmp_color(255, 100, 0);
     Color hum_color(0, 179, 255);
@@ -121,17 +123,42 @@ int main(int argc, char *argv[])
     while (true)
     {
         int buttonState = digitalRead(DHT_BUTTON_PIN);
+        offscreen->Clear();
 
+        // brightness button
         if (buttonState == HIGH)
         {
-            std::cout << "Button pressed!" << std::endl;
+            matrix->SetBrightness(brightness); = brightness == 100 ? 10 : brightness + 10;
+            matrix->SetBrightness(brightness);
 
-            delay(100);
+            rgb_matrix::DrawText(
+                offscreen,
+                dateFont,
+                32 - (9 * dateFont.CharacterWidth('M') / 2),
+                20,
+                brigtness_color,
+                NULL,
+                "Brigtness",
+                0);
+
+            rgb_matrix::DrawText(
+                offscreen,
+                dayFont,
+                32 - ((strlen(std::to_string(brightness).c_str()) * dayFont.CharacterWidth('M')) / 2),
+                35,
+                brigtness_color,
+                NULL,
+                std::to_string(brightness).c_str(),
+                0);
+
+            offscreen = matrix->SwapOnVSync(offscreen);
+
+            delay(500);
+
+            continue;
         }
 
         struct TemperatureAndHumidityValues temperatureAndHumidityValues = getTemperatureAndHumidityValues(DHT22Sensor);
-
-        offscreen->Fill(0, 0, 0);
 
         int dayIndex = getDayIndex();
         std::string formattedDate = getFormattedDate();
