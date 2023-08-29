@@ -116,6 +116,8 @@ struct TemperatureAndHumidityValues getTemperatureAndHumidityValues(struct TDHT2
     {
         values.temperatureValue = roundedTemp;
         values.humidityValue = roundedHum;
+        lastTemperature = roundedTemp;
+        lastHumidity = roundedHum;
     }
 
     return values;

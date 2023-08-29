@@ -12,17 +12,19 @@ using namespace rgb_matrix;
 #include <unistd.h>
 #include <cstring>
 
-#define DHT_PIN 8 // WiringPi 2 = BCM 27 = connector pin 13
+#define DHT_PIN 8         // WiringPi 2 = BCM 27 = connector pin 13
 #define DHT_BUTTON_PIN 25 // WiringPi 25
 
-int getDayIndex() {
+int getDayIndex()
+{
     auto now = std::chrono::system_clock::now();
     std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
     struct std::tm *localTime = std::localtime(&currentTime);
     return localTime->tm_wday;
 }
 
-std::string getFormattedDate() {
+std::string getFormattedDate()
+{
     auto now = std::chrono::system_clock::now();
     std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
 
@@ -32,7 +34,8 @@ std::string getFormattedDate() {
     return buffer;
 }
 
-std::string getFormattedTime() {
+std::string getFormattedTime()
+{
     auto now = std::chrono::system_clock::now();
     std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
 
@@ -41,9 +44,6 @@ std::string getFormattedTime() {
 
     return buffer;
 }
-
-
-int delayInS = 1;
 
 int main(int argc, char *argv[])
 {
@@ -78,6 +78,9 @@ int main(int argc, char *argv[])
     TDHT22 *DHT22Sensor = new TDHT22(DHT_PIN);
     DHT22Sensor->Init(); // calls the wiringPiSetup
 
+    // init buttons
+    pinMode(DHT_BUTTON_PIN, INPUT);
+
     // Set colors
     Color days_color(100, 10, 10);
     Color time_color(0, 100, 0);
@@ -111,13 +114,21 @@ int main(int argc, char *argv[])
 
     // Init time variables
     const char *weekdaysArr[7] = {"7diena", "1diena", "2diena", "3diena", "4diena", "5diena", "6diena"};
-    
+
     char tmpInfo[7];
     char humInfo[7];
-    
 
     while (true)
     {
+        int buttonState = digitalRead(DHT_BUTTON_PIN);
+
+        if (buttonState == HIGH)
+        {
+            std::cout << "Button pressed!" << std::endl;
+
+            delay(100);
+        }
+
         struct TemperatureAndHumidityValues temperatureAndHumidityValues = getTemperatureAndHumidityValues(DHT22Sensor);
 
         offscreen->Fill(0, 0, 0);
@@ -191,8 +202,7 @@ int main(int argc, char *argv[])
         // Atomic swap with double buffer
         offscreen = matrix->SwapOnVSync(offscreen);
 
-        // change to 1s
-        delay(delayInS * 1000);
+        delay(100);
     }
 
     // Finished. Shut down the RGB matrix.
