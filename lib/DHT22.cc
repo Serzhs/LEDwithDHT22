@@ -123,8 +123,8 @@ int lastHumidity = 0;
 struct TemperatureAndHumidityValues getTemperatureAndHumidityValues(struct TDHT22 *DHT22Sensor)
 {
     DHT22Sensor->Fetch();
-
-    int roundedTemp = (int)roundf(DHT22Sensor->Temp);
+    // substract 3 deg as error
+    int roundedTemp = (int)roundf((DHT22Sensor->Temp - 3) * 10);
     int roundedHum = (int)roundf(DHT22Sensor->Hum);
 
     struct TemperatureAndHumidityValues values;
