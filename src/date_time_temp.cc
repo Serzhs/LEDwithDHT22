@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
         std::string formattedTime = getFormattedTime();
 
         // Get temperature info
-        sprintf(tmpInfo, "%d.%d C", temperatureAndHumidityValues.temperatureValue / 10, temperatureAndHumidityValues.temperatureValue % 10);
+        sprintf(tmpInfo, "%d.%dC", temperatureAndHumidityValues.temperatureValue / 10, temperatureAndHumidityValues.temperatureValue % 10);
         // Get humidity info
         sprintf(humInfo, "%d%%", temperatureAndHumidityValues.humidityValue);
 
