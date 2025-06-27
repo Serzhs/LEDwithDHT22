@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
         // Atomic swap with double buffer
         offscreen = matrix->SwapOnVSync(offscreen);
 
-        delay(100);
+        delay(1000);
     }
 
     // Finished. Shut down the RGB matrix.
