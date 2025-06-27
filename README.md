@@ -4,3 +4,6 @@
 
 
 Navigate to the project directory and access the `src` folder. Execute the `make` command to build the program. Once the compilation is finished, run the executable by entering `./date_time_temp` in the `src` folder.
+
+
+To make this run on boot, please change relative font paths to static ones
