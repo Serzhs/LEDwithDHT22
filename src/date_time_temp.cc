@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
     pinMode(DHT_BUTTON_PIN, INPUT);
 
     // Set colors
-    Color days_color(100, 10, 10);
+    Color days_color(255, 0, 0);
     Color time_color(0, 100, 0);
     Color brigtness_color(255, 255, 255);
     Color date_color(255, 255, 0);
