@@ -128,7 +128,8 @@ int main(int argc, char *argv[])
         // brightness button
         if (buttonState == HIGH)
         {
-            matrix->SetBrightness(brightness); = brightness == 100 ? 10 : brightness + 10;
+
+            brightness = (brightness == 100) ? 10 : brightness + 10;
             matrix->SetBrightness(brightness);
 
             rgb_matrix::DrawText(
